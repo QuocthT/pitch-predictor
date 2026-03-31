@@ -40,13 +40,13 @@ The core challenge is the difference in data itself. Major League Baseball provi
 
 | Sheet Category | Description |
 
-| Hitting Cumulative / Regular Season / Playoffs | Per-player cumulative batting stats including PA, AVG, OBP, SLG, OPS, K%, BB%, contact rates, pitch count splits (0-0, 0-1, ..., 3-2), and performance vs LHP/RHP |
-| Pitching Cumulative / Regular Season / Playoffs | Per-pitcher stats including ERA, WHIP, FIP, K/BB, strike/ball distribution, CSW%, WHF%, first-pitch strike rate, early count tendencies |
-| Fielding Cumulative / Regular Season / Playoffs | Errors, putouts, assists, fielding %, positional starts |
-| U18 Hitting / Pitching / Fielding | Same structure as above for the under-18 division |
-| Hitting / Pitching / Fielding Game Logs | Game-by-game breakdowns per player |
-| PA Logs | pitch-by-pitch plate appearance logs with pitch sequence (B, F, Sw, Sc, GO, FO, 1B, 2B, 3B, HR, etc.), batter/pitcher handedness, count progression, and final PA result |
-| Glossary | Data dictionary for all abbreviations |
+- | Hitting Cumulative / Regular Season / Playoffs | Per-player cumulative batting stats including PA, AVG, OBP, SLG, OPS, K%, BB%, contact rates, pitch count splits (0-0, 0-1, ..., 3-2), and performance vs LHP/RHP |
+- | Pitching Cumulative / Regular Season / Playoffs | Per-pitcher stats including ERA, WHIP, FIP, K/BB, strike/ball distribution, CSW%, WHF%, first-pitch strike rate, early count tendencies |
+- | Fielding Cumulative / Regular Season / Playoffs | Errors, putouts, assists, fielding %, positional starts |
+- | U18 Hitting / Pitching / Fielding | Same structure as above for the under-18 division |
+- | Hitting / Pitching / Fielding Game Logs | Game-by-game breakdowns per player |
+- | PA Logs | pitch-by-pitch plate appearance logs with pitch sequence (B, F, Sw, Sc, GO, FO, 1B, 2B, 3B, HR, etc.), batter/pitcher handedness, count progression, and final PA result |
+- | Glossary | Data dictionary for all abbreviations |
 
 - Plate appearances: around 7000 individual PA records with full pitch sequences
 - Pitch types tracked: Ball (B), Foul (F), Swinging Strike (Sw), Called Strike (Sc), Ground Out (GO), Fly Out (FO), Single (1B), Double (2B), Triple (3B), Home Run (HR), Reached on Error (ROE), and other
