@@ -74,7 +74,7 @@ class OutcomeMarkov:
         self.smoothing = smoothing
         # counts[(b,s)][outcome] = count
         self.counts: dict[tuple, dict[str, float]] = defaultdict(
-            lambda: defaultdict(float)
+            _nested_float_dict   # already defined at top of the file
         )
         self.fitted = False
 
@@ -152,7 +152,7 @@ class PitchTransitionMarkov:
     def __init__(self, smoothing: float = 0.1):
         self.smoothing = smoothing
         self.counts: dict[tuple, dict[str, float]] = defaultdict(
-            lambda: defaultdict(float)
+            _nested_float_dict
         )
         self.fitted = False
 

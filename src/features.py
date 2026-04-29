@@ -166,12 +166,20 @@ def build_feature_matrix(
     pa_df: pd.DataFrame,
     batter_tend: pd.DataFrame,
     pitcher_tend: pd.DataFrame,
+    xlsx_path: str | None = None,
 ) -> pd.DataFrame:
-    """
-    Merge PA rows with tendency features and add handedness indicators.
-    Used for tabular baselines (Logistic Regression, XGBoost).
-    """
     df = pa_df.copy()
+
+    # Override with cumulative sheet stats if path provided
+    if xlsx_path:
+        from preprocessing import (
+            load_cumulative_batter_features,
+            load_cumulative_pitcher_features,
+        )
+        cum_bat = load_cumulative_batter_features(xlsx_path)
+        cum_pit = load_cumulative_pitcher_features(xlsx_path)
+        batter_tend  = cum_bat.combine_first(batter_tend)
+        pitcher_tend = cum_pit.combine_first(pitcher_tend)
 
     # Join batter tendencies
     df = df.join(batter_tend, on="batter", how="left")
@@ -242,7 +250,7 @@ class PASequenceDataset(Dataset):
         for col in self.TENDENCY_COLS:
             if col not in self.df.columns:
                 self.df[col] = 0.0
-            self.df[col] = self.df[col].fillna(self.df[col].median())
+            self.df[col] = self.df[col].fillna(self.df[col].median()).fillna(0.0)
 
     def __len__(self) -> int:
         return len(self.df)

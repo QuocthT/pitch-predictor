@@ -163,6 +163,9 @@ def build_pa_dataframe(xlsx_path: str) -> pd.DataFrame:
         except (ValueError, TypeError):
             balls, strikes = 0, 0
 
+        mid_seq = [t for t in seq if t in MID_PITCH_TOKENS]   # only B, F, Sw, Sc
+        terminal = seq[-1] if seq[-1] in TERMINAL_TOKENS else result
+
         records.append({
             "pa_id":          pa_id,
             "date":           date,
@@ -173,8 +176,9 @@ def build_pa_dataframe(xlsx_path: str) -> pd.DataFrame:
             "batter_hand":    str(row.get("Batter Hand", "")).strip(),
             "pitcher":        pitcher,
             "pitcher_hand":   str(row.get("Pitcher Hand", "")).strip(),
-            "sequence":       seq,
-            "seq_len":        len(seq),
+            "sequence":       mid_seq,          # ONLY mid-PA tokens as model input
+            "seq_len":        len(mid_seq),
+            "terminal_token": terminal,         # stored for reference, NOT fed to model
             "result":         result,
             "result_category": OUTCOME_MAP.get(result, "OTHER"),
             "balls_final":    balls,
@@ -195,6 +199,89 @@ def load_cumulative_stats(xlsx_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     hit = pd.read_excel(xlsx_path, sheet_name="Hitting Cumulative", header=0)
     pit = pd.read_excel(xlsx_path, sheet_name="Pitching Cumulative", header=0)
     return hit, pit
+
+def load_cumulative_batter_features(xlsx_path: str) -> pd.DataFrame:
+    """
+    Load batter tendency features directly from Hitting Cumulative sheet.
+    More reliable than computing from PA logs (full season sample size).
+    Returns DataFrame indexed by player name.
+    """
+    hit = pd.read_excel(xlsx_path, sheet_name="Hitting Cumulative", header=0)
+
+    df = hit[["Name", "PA", "K%", "BB%", "HBP%", "AVG", "OBP", "SLG",
+              "SW/PA", "CON%", "HR"]].copy()
+
+    # Rename to match PASequenceDataset.TENDENCY_COLS
+    df = df.rename(columns={
+        "Name":  "batter",
+        "K%":    "k_rate",
+        "BB%":   "bb_rate",
+        "HBP%":  "hbp_rate",
+        "AVG":   "hit_rate",
+        "OBP":   "obp",
+        "SLG":   "slg",
+        "SW/PA": "swing_rate",
+        "CON%":  "contact_rate",
+    })
+
+    # Derive xbh_rate and hr_rate from raw counts / PA
+    df["hr_rate"]  = df["HR"] / df["PA"].clip(lower=1)
+    df["xbh_rate"] = df["slg"] - df["hit_rate"]   # ISO proxy
+    df["avg_pa_len"] = 0.0   # not in cumulative sheet — will use PA-log median
+
+    df = df.dropna(subset=["batter"])
+    df = df[df["batter"].astype(str).str.strip() != ""]
+    df = df.set_index("batter")
+
+    # Keep only columns needed by TENDENCY_COLS
+    keep = ["k_rate", "bb_rate", "hit_rate", "xbh_rate", "hr_rate",
+            "avg_pa_len", "swing_rate", "PA"]
+    df = df[[c for c in keep if c in df.columns]]
+    df = df.fillna(df.median()).fillna(0.0)
+
+    print(f"[preprocessing] Loaded cumulative hitting stats for {len(df)} batters")
+    return df
+
+
+def load_cumulative_pitcher_features(xlsx_path: str) -> pd.DataFrame:
+    """
+    Load pitcher tendency features directly from Pitching Cumulative sheet.
+    Returns DataFrame indexed by player name.
+    """
+    pit = pd.read_excel(xlsx_path, sheet_name="Pitching Cumulative", header=0)
+    print("Pitching columns:", pit.columns.tolist()[:20])  # debug — remove after confirming
+
+    # Common column names in the pitching sheet
+    rename = {}
+    col_map = {
+        "Name":   "pitcher",
+        "K%":     "pitcher_k_rate",
+        "BB%":    "pitcher_bb_rate",
+        "AVG":    "pitcher_hit_allow",
+        "P/PA":   "pitcher_avg_pa_len",
+        "FPS%":   "first_pitch_strike_rt",
+        "CSW%":   "csw_rate",
+    }
+    for orig, new in col_map.items():
+        if orig in pit.columns:
+            rename[orig] = new
+
+    df = pit.rename(columns=rename)
+
+    if "pitcher" not in df.columns and "Name" in pit.columns:
+        df["pitcher"] = pit["Name"]
+
+    df = df.dropna(subset=["pitcher"])
+    df = df[df["pitcher"].astype(str).str.strip() != ""]
+    df = df.set_index("pitcher")
+
+    keep = ["pitcher_k_rate", "pitcher_bb_rate", "pitcher_hit_allow",
+            "pitcher_avg_pa_len", "first_pitch_strike_rt"]
+    df = df[[c for c in keep if c in df.columns]]
+    df = df.fillna(df.median()).fillna(0.0)
+
+    print(f"[preprocessing] Loaded cumulative pitching stats for {len(df)} pitchers")
+    return df
 
 
 if __name__ == "__main__":

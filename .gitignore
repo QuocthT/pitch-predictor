@@ -1,0 +1,30 @@
+# Virtual environment
+.venv/
+
+# Data files (too large for git)
+data/
+
+# Model checkpoints and run outputs
+runs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Serialised model artifacts
+*.pt
+*.pkl
+*.parquet
+
+# Spreadsheets
+*.xlsx
+*.xls
+
+# OS
+.DS_Store
+Thumbs.db

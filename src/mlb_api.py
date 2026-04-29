@@ -220,7 +220,7 @@ def _mlb_event_to_token(event: str) -> str | None:
 
 def _mlb_event_to_category(event: str) -> str:
     token = _mlb_event_to_token(event) or "OTHER"
-    from features import OUTCOME_MAP
+    from preprocessing import OUTCOME_MAP
     return OUTCOME_MAP.get(token, "OTHER")
 
 
